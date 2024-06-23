@@ -1,29 +1,22 @@
+"use client";
+import { useFormState } from "react-dom";
+
 import FormButton from "@/components/form-btn";
 import FormInput from "@/components/form-input";
 import SocialLogin from "@/components/social-login";
 
-export default function LogIn() {
-  const handleForm = async (formData: FormData) => {
-    "use server";
-  };
+import { handleForm } from "./actions";
 
-  // const onClick = async () => {
-  //   const response = await fetch("/www/users", {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       username: "nico",
-  //       password: "1234",
-  //     }),
-  //   });
-  //   console.log(await response.json());
-  // };
+export default function LogIn() {
+  const [state, action] = useFormState(handleForm, null);
+
   return (
     <div className="flex flex-col gap-10 py-8 px-6">
       <div className="flex flex-col gap-2 *:font-medium">
         <h1 className="text-2xl">안녕하세요!</h1>
         <h2 className="text-xl">Log in with email and password.</h2>
       </div>
-      <form action={handleForm} className="flex flex-col gap-3">
+      <form action={action} className="flex flex-col gap-3">
         <FormInput
           name="email"
           type="email"
@@ -36,9 +29,9 @@ export default function LogIn() {
           type="password"
           placeholder="Password"
           required
-          errors={[]}
+          errors={state?.errors ?? []}
         />
-        <FormButton loading={false} text="Log in" />
+        <FormButton text="Log in" />
       </form>
       <SocialLogin />
     </div>
