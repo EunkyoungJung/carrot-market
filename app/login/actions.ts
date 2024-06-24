@@ -1,17 +1,32 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { z } from "zod";
 
-export const handleForm = async (prevState: any, formData: FormData) => {
-  "use server";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REGEX,
+  PASSWORD_REGEX_ERROR,
+} from "../lib/constants";
 
-  console.log("prevState", prevState);
-  console.log("formData", formData);
+const fromSchema = z.object({
+  email: z.string().email(),
+  password: z
+    .string({ required_error: "Password is required." })
+    .min(PASSWORD_MIN_LENGTH)
+    .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+  confirm_password: z.string().min(10),
+});
 
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  console.log("logged in!");
-  //   redirect("/");
-  return {
-    errors: ["wrong password", "passwords too short"],
+export const login = async (prevState: any, formData: FormData) => {
+  const data = {
+    email: formData.get("email"),
+    password: formData.get("password"),
   };
+
+  const result = fromSchema.safeParse(data);
+  if (!result.success) {
+    return result.error.flatten();
+  } else {
+    console.log("result.data", result.data);
+  }
 };

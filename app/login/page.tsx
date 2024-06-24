@@ -6,10 +6,11 @@ import Button from "@/components/button";
 import Input from "@/components/input";
 import SocialLogin from "@/components/social-login";
 
-import { handleForm } from "./actions";
+import { login } from "./actions";
+import { PASSWORD_MIN_LENGTH } from "../lib/constants";
 
 export default function LogIn() {
-  const [state, action] = useFormState(handleForm, null);
+  const [state, dispatch] = useFormState(login, null);
 
   return (
     <div className="flex flex-col gap-10 py-8 px-6">
@@ -17,20 +18,21 @@ export default function LogIn() {
         <h1 className="text-2xl">안녕하세요!</h1>
         <h2 className="text-xl">Log in with email and password.</h2>
       </div>
-      <form action={action} className="flex flex-col gap-3">
+      <form action={dispatch} className="flex flex-col gap-3">
         <Input
           name="email"
           type="email"
           placeholder="Email"
           required
-          errors={[]}
+          errors={state?.fieldErrors?.email}
         />
         <Input
           name="password"
+          minLength={PASSWORD_MIN_LENGTH}
           type="password"
           placeholder="Password"
           required
-          errors={state?.errors ?? []}
+          errors={state?.fieldErrors?.password}
         />
         <Button text="Log in" />
       </form>
