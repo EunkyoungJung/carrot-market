@@ -2,7 +2,9 @@
 
 import { z } from "zod";
 
-// const usernameSchema = z.string().min(5).max(10);
+const passwordRegex = new RegExp(
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*?[#?!@$%^&*-]).+$/
+);
 
 const checkUsername = (name: string) => {
   return !name.includes("potato");
@@ -22,9 +24,17 @@ const fromSchema = z
       })
       .min(3, "way too short")
       .max(10, "way too loooong")
+      .trim()
+      .transform((x) => x.trim())
       .refine(checkUsername, "no potatoes are allowed"),
     email: z.string().email(),
-    password: z.string().min(10),
+    password: z
+      .string()
+      .min(10)
+      .regex(
+        passwordRegex,
+        "Passwords must contain at least one UPPERCASE, lowercase, number and special characters #?!@$%^&*-"
+      ),
     confirm_password: z.string().min(10),
   })
   .refine(checkPasswords, {
@@ -46,6 +56,9 @@ export const createAccount = async (prevState: any, formData: FormData) => {
   if (!result.success) {
     console.log("hah", result.error.flatten());
     return result.error.flatten();
+  } else {
+    // return result.data;
+    console.log("result.data", result.data);
   }
   // console.log("prevState", prevState);
   // console.log("formData", formData);
