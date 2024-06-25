@@ -1,22 +1,31 @@
 "use server";
 
 import { z } from "zod";
+import validator from "validator";
 
-const fromSchema = z.object({
-  phone: z.string(),
-  token: z.string().min(10),
+const phoneSchema = z.object({
+  phone: z.string().trim().refine(validator.isMobilePhone),
 });
 
-export const smsVerification = async (prevState: any, formData: FormData) => {
-  const data = {
-    email: formData.get("phone"),
-    password: formData.get("token"),
+const tokenSchema = z.object({
+  phone: z.coerce.number().min(100000).max(999999),
+});
+
+export const smsLogin = async (prevState: any, formData: FormData) => {
+  const phoneData = {
+    phone: formData.get("phone"),
+  };
+  const tokenData = {
+    token: formData.get("token"),
   };
 
-  const result = fromSchema.safeParse(data);
-  if (!result.success) {
-    return result.error.flatten();
-  } else {
-    console.log("result.data", result.data);
+  const phoneResult = phoneSchema.safeParse(phoneData);
+  const tokenResult = tokenSchema.safeParse(tokenData);
+  if (!phoneResult.success) {
+    return phoneResult.error.flatten();
   }
+  if (!tokenResult.success) {
+    return tokenResult.error.flatten();
+  }
+  console.log("phoneResult.data", phoneResult.data);
 };
