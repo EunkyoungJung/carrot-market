@@ -2,30 +2,43 @@
 
 import { z } from "zod";
 import validator from "validator";
+import { redirect } from "next/navigation";
 
-const phoneSchema = z.object({
-  phone: z.string().trim().refine(validator.isMobilePhone),
-});
+const phoneSchema = z
+  .string()
+  .trim()
+  .refine(
+    (phone) => validator.isMobilePhone(phone, "ko-KR"),
+    "Wrong phone format"
+  );
 
-const tokenSchema = z.object({
-  phone: z.coerce.number().min(100000).max(999999),
-});
+const tokenSchema = z.coerce.number().min(100000).max(999999);
 
-export const smsLogin = async (prevState: any, formData: FormData) => {
-  const phoneData = {
-    phone: formData.get("phone"),
-  };
-  const tokenData = {
-    token: formData.get("token"),
-  };
+export interface ActionState {
+  token: boolean;
+  errors: [];
+}
 
-  const phoneResult = phoneSchema.safeParse(phoneData);
-  const tokenResult = tokenSchema.safeParse(tokenData);
-  if (!phoneResult.success) {
-    return phoneResult.error.flatten();
+export const SMSLogin = async (prevState: ActionState, formData: FormData) => {
+  const phone = formData.get("phone");
+  const token = formData.get("token");
+
+  if (!prevState.token) {
+    const result = phoneSchema.safeParse(phone);
+    if (!result.success) {
+      return { token: false, error: result.error.flatten() };
+    } else {
+      return { token: true };
+    }
   }
-  if (!tokenResult.success) {
-    return tokenResult.error.flatten();
+
+  const result = tokenSchema.safeParse(token);
+  if (!result.success) {
+    return {
+      token: true,
+      error: result.error.flatten(),
+    };
+  } else {
+    redirect("/");
   }
-  console.log("phoneResult.data", phoneResult.data);
 };
